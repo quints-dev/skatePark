@@ -1,4 +1,22 @@
-const { createSkater } = require('../service/skater');
+const { req, res } = require("express");
+const { findAllSkaters, createSkater } = require('../service/skater');
+
+const findAllSkatersController = async (req, res) => {
+    try {
+        const skaters =  await findAllSkaters();
+    res.status(200).json({
+        msg:'Lista de Skaters obtenida',
+        datos:skaters,
+    });
+    } catch (error) {
+        console.log('Error al obtener los skaters', error.message);
+        res.status(500).json({
+            msg:'Error del servidor',
+            datos: [],
+        });
+    }
+}
+
 
 const createSkaterController = async (req, res) => {
     try {
@@ -24,4 +42,5 @@ const createSkaterController = async (req, res) => {
     }
 }
 
-module.exports = createSkaterController
+module.exports = { findAllSkatersController, 
+                createSkaterController }

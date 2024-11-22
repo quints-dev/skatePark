@@ -37,3 +37,206 @@ project/
 │   └── skatersRoutes.js
 ├── index.js
 └── package.json
+
+require('dotenv').config();
+const Server = require('./server/server');
+
+const sequelize = require("./connection/connection")
+
+// sincronizar
+sequelize.sync({ force: false })
+    .then(() => {
+        console.log('Base de datos sincronizada');
+        
+    })
+    .catch((err) => {
+        console.log('error');
+        
+    })
+
+connection.js
+const { Sequelize } = require('sequelize');
+
+const sequelize = new Sequelize({
+    username: process.env.DB_USERNAME,
+    password: process.env.DB_PASSWORD,
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT,
+    database: process.env.DB_DATABASE,
+    dialect: process.env.DB_DIALECT,
+    dialectOptions: {
+        ssl: {
+            require: true,
+            rejectUnauthorized: false
+        }
+    }
+});
+
+sequelize
+.authenticate()
+.then(() => {
+    console.log('Conexion a la base de datos exitosa');
+    })
+    .catch((err) => {
+        console.log('No se puede conectar a la base de datos');
+    });
+
+module.exports = sequelize;
+
+controllers
+const { createSkater } = require('../service/skater');
+
+const createSkaterController = async (req, res) => {
+    try {
+        const { email, nombre, password, temporadaexperiencia, especialidad, foto, estado} = req.body;
+    if(!email || !nombre || !password){
+        return res.status(400).json({
+            msg: 'Faltan campos obligatorios',
+            datos: []
+        });
+    }
+    const response = await createSkater(email, nombre, password, temporadaexperiencia, especialidad, foto, estado);
+    res.status(response.status).json({
+        msg: response.msg,
+        datos: response.datos
+    });
+    } catch (error) {
+        console.log('Error en controlador', error);
+        res.status(500).json({
+            msg: 'Error del servidor',
+            datos:[]
+        })
+        
+    }
+}
+
+module.exports = createSkaterController
+
+helpers
+const jwt = require('jsonwebtoken');
+
+const generarJWT = async (uid, expiresIn = '4h') => {
+    try {
+        // Validar que la clave secreta esté configurada
+        if (!process.env.SECRETKEY) {
+            throw new Error('La clave secreta (SECRETKEY) no está definida en las variables de entorno.');
+        }
+
+        // Crear el token
+        const payload = { uid };
+        const token = await jwt.sign(payload, process.env.SECRETKEY, { expiresIn });
+        return token;
+    } catch (err) {
+        console.error('Error al generar el JWT:', err);
+        throw new Error('No se pudo generar el token.');
+    }
+};
+
+module.exports = generarJWT;
+
+
+models
+const jwt = require('jsonwebtoken');
+
+const generarJWT = async (uid, expiresIn = '4h') => {
+    try {
+        // Validar que la clave secreta esté configurada
+        if (!process.env.SECRETKEY) {
+            throw new Error('La clave secreta (SECRETKEY) no está definida en las variables de entorno.');
+        }
+
+        // Crear el token
+        const payload = { uid };
+        const token = await jwt.sign(payload, process.env.SECRETKEY, { expiresIn });
+        return token;
+    } catch (err) {
+        console.error('Error al generar el JWT:', err);
+        throw new Error('No se pudo generar el token.');
+    }
+};
+
+module.exports = generarJWT;
+
+
+routes
+const { Router } = require('express');
+const createSkaterController = require('../controllers/skater');
+
+
+const router = Router();
+
+router.post('', createSkaterController);
+
+module.exports = router; 
+
+server
+const express = require('express');
+const exphbs = require('express-handlebars');
+const fileUpload = require('express-fileupload');
+require('dotenv').config();
+
+class Server {
+    constructor(){
+        this.app = express();
+        this.port = process.env.PORT || 3000;
+        this.middlewares();
+        this.routes();
+    }
+
+    middlewares(){
+        this.app.use(express.json());
+    }
+
+    routes(){
+        this.app.use('/skater', require('../routes/skater'))
+    }
+
+    listen(){
+        this.app.listen(this.port, () => {
+            console.log(`Escuchando en el puerto ${this.port}`);
+        });
+    }
+}
+
+module.exports = Server;
+
+service
+const Skater = require('../models/skater');
+
+
+const createSkater = async (email, nombre, password, temporadasexperiencia, especialidad, foto, estado) => {
+try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const skater = await Skater.create({
+        email, 
+        nombre, 
+        password: hashedPassword,
+        temporadasexperiencia,
+        especialidad,
+        foto,
+        estado
+    });
+    return{
+        msg: 'Skater creado exitosamente',
+        status: 201,
+        datos: skater.toJSON()
+    }
+} catch (error) {
+    return{
+        msg: 'Error al crear el skater',
+        status: 500,
+        datos: []
+    }
+}
+}
+
+module.exports = createSkater;
+
+index
+const Server = require("./server/server");
+
+const server = new Server();
+
+server.listen();
+
+
