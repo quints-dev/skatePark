@@ -25,11 +25,12 @@ const Skater = sequelize.define('Skater', {
         type: DataTypes.STRING,
     },
     estado: {
-        type: DataTypes.STRING,
+        type: DataTypes.BOOLEAN,
         defaultValue: false,
     },
 }, {
-    timestamps: true,
+    tableName: 'skaters',
+    timestamps: false,
 });
 
 module.exports = Skater;

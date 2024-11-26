@@ -1,22 +1,33 @@
 const express = require('express');
-const exphbs = require('express-handlebars');
+const hbs = require('hbs');
+const fs = require('fs');
+const path = require('path');
 const fileUpload = require('express-fileupload');
 require('dotenv').config();
 
 class Server {
     constructor(){
         this.app = express();
-        this.port = process.env.PORT || 3000;
+        this.port = 3000;
         this.middlewares();
         this.routes();
     }
 
     middlewares(){
-        this.app.use(express.json());
+        this.app.set('view engine', 'hbs');
+        hbs.registerPartials(__dirname.slice(0, -7) + '/views/partials');
+        this.app.use(express.static(path.join(__dirname, '../public')));
+        this.app.use(express.urlencoded({ extended: true }));
+        this.app.use(fileUpload({
+            limits: { fileSize: 5000000 },
+            abortOnLimit: true,
+            responseOnLimit: 'El archivo es demasiado grande'
+        }));
     }
 
     routes(){
-        this.app.use('/skater', require('../routes/skater'))
+        this.app.use('/', require('../routes/skater'));
+        this.app.use('/skaters', require('../routes/skater2'));
     }
 
     listen(){
