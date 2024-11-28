@@ -133,4 +133,4 @@ module.exports = { findAllSkatersController,
                 findByIdController,
                 updateSkaterController,
                 deleteByIdController 
-            }
+                } 

@@ -1,22 +1,20 @@
-const Skater = require("../models/skater");
+const Skater = require('../models/skater');
 
+// Validador para verificar si un ID existe en la base de datos
 const validarIdExiste = async (id) => {
-    const existe = await Skater.findOne({
-        where: { id }
-    });
-    if (!existe) {
-        throw new Error(`El id ${id} no existe`);
+    const existeSkater = await Skater.findByPk(id);
+    if (!existeSkater) {
+        throw new Error(`El ID ${id} no existe en la base de datos`);
     }
 };
 
-const nombreSkaterExiste = (nombreSkater) => {
-    const nombreSkaterExiste = Skater.findOne({ where: { nombreSkater } });
-    if(nombreSkaterExiste){
-        throw new Error(`El nombre de skater ${nombreSkater} ya existe`);
+// Validador para verificar si un nombre de Skater ya existe
+const nombreSkaterExiste = async (nombre) => {
+    const existeNombre = await Skater.findOne({ where: { nombre } });
+    if (existeNombre) {
+        throw new Error(`El nombre ${nombre} ya está registrado`);
     }
-}
-
-module.exports = {
-    validarIdExiste, 
-    nombreSkaterExiste
 };
+
+module.exports = validarIdExiste, nombreSkaterExiste ;
+

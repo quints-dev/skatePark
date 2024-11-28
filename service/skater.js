@@ -1,6 +1,30 @@
-const bcrypt = require('bcrypt');
+const bcryptjs = require('bcryptjs');
 const Skater = require('../models/skater');
 
+const createSkater = async (email, nombre, password, temporadasexperiencia, especialidad, foto, estado) => {
+    try {
+        
+        const salt = bcryptjs.genSaltSync();
+        password = bcryptjs.hashSync(password, salt);
+        
+        const skater = await Skater.create({
+            email, nombre, password, temporadasexperiencia, especialidad, foto, estado
+        });
+        return{
+            msg: `El Skater ${nombre} ha clasificado `,
+            status: 201,
+            datos: []
+        }
+    } catch (error) {
+        console.log(error);
+        return{
+            msg: 'Error al crear el skater',
+            status: 500,
+            datos: []
+            };
+        }
+    }
+    
 
 const findAllSkaters = async () => {
 try {
@@ -50,66 +74,17 @@ const findById = async (id) => {
     }
 }
 
-const createSkater = async (email, nombre, password, temporadasexperiencia, especialidad, foto, estado) => {
-try {
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const skater = await Skater.create({
-        email, 
-        nombre, 
-        password: hashedPassword,
-        temporadasexperiencia,
-        especialidad,
-        foto,
-        estado
-    });
-    return{
-        msg: 'Skater creado exitosamente',
-        status: 201,
-        datos: skater.toJSON()
-    }
-} catch (error) {
-    return{
-        msg: `Error al crear el skater, ${error.message}`,
-        status: 500,
-        datos: []
-    };
-}
-};
 
 const updateSkater = async (id, email, nombre, password, temporadasexperiencia, especialidad, foto, estado) => {
 try {
-    const updateData = { email,nombre,password,temporadasexperiencia,especialidad,foto,estado };
-    if(password){
-        updateData = await bcrypt.hash(password, 10);// hash password solo en contraseña nueva
-    }
-
-    const [actualizar] = await Skater.update(updateData, {
-        where: { 
-            id
-        }
-    });
-    if(actualizar === 0 ){
-        return{
-            msg: 'Skater no encontrado',
-            status: 400,
-            datos: []
-        };
-    }
-    const actualizarSkater = await Skater.findByPk(id);
-    return{
-        msg: 'Skate actualizado con exito',
-        status: 200,
-        datos: actualizarSkater.toJSON()    
-    };
+    
+    await Skater.update({ id, email, nombre, password, temporadasexperiencia, especialidad, foto, estado }, {where:{ id }});
 } catch (error) {
-    console.log('Error al actualizar skater:', error.message);
-    return{
-        msg: 'Error en el servidor',
-        status: 500,
-        datos: []
-        };
+    console.log(error);
+    
+    return error.message
     }
-};
+}
 
 const deleteById = async (id) => {
     try {
@@ -161,10 +136,9 @@ const deleteById = async (id) => {
 
 
 module.exports = {
+                createSkater,
                 findAllSkaters,
                 findById,
-                createSkater,
                 updateSkater,
-                deleteById 
-            };
-                
+                deleteById
+                };

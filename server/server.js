@@ -27,7 +27,8 @@ class Server {
 
     routes(){
         this.app.use('/', require('../routes/skater'));
-        this.app.use('/skaters', require('../routes/skater2'));
+        this.app.use('/auth', require('../routes/auth'));
+        this.app.use('/api/users', require('../routes/user'))
     }
 
     listen(){
